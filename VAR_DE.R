@@ -29,7 +29,7 @@ tempH <- subset(temp, geo == "DE")
 pF  <- na.omit(zoo(tempF$values,order.by=tempF$time))
 pH  <- na.omit(zoo(tempH$values,order.by=tempH$time))
 # together
-z= z0 <- merge(pF,pH,all=FALSE)
+z <- merge(pF,pH,all=FALSE)
 
 y  <- ts(coredata(z), frequency=12,start=c(year(z[1]),month(z[1])))
 
