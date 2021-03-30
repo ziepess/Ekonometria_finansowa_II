@@ -20,20 +20,20 @@ source("Block1Functions.R")
 # 1. Loading data           #
 #############################
 temp <- get_eurostat("namq_10_gdp",
-                     filters = list(geo = c("DE","EA"),
+                     filters = list(geo = c("DE","FR"),
                                     na_item = "B1GQ",
                                     unit = "CLV_PCH_SM",
-                                    s_adj = "NSA"))
-tempF <- subset(temp, geo == "EA")
+                                    s_adj = "SCA"))
+tempF <- subset(temp, geo == "FR")
 tempH <- subset(temp, geo == "DE")
 pF  <- na.omit(zoo(tempF$values,order.by=tempF$time))
 pH  <- na.omit(zoo(tempH$values,order.by=tempH$time))
 # together
 z <- merge(pF,pH,all=FALSE)
 
-y  <- ts(coredata(z), frequency=12,start=c(year(z[1]),month(z[1])))
+y  <- ts(coredata(z), frequency=4,start=c(year(z[1]),month(z[1])))
 
-plot(z, screens=c(1,1),col=1:2,main="GDP growth in DE and EA", type = "l", ylab="",xlab="", bty="l")
+plot(z, screens=c(1,1),col=1:2,main="GDP growth in DE and FR", type = "l", ylab="",xlab="", bty="l")
 legend("bottomleft",legend=c("EA","DE"),col=1:2,lty=1, bty="n")
 #############################
 # 2. VAR model              #
@@ -87,9 +87,9 @@ MyPlot(IRFtab, main= "IRF from uEA to infEA")
 # Panel of IRFs  
 require(grid)
 require(gridExtra)
-IRFtab$IRF = SVMA[1,1,]; irf11 <- MyPlot(IRFtab, main = "IRF from uEA to infEA")
-IRFtab$IRF = SVMA[1,2,]; irf12 <- MyPlot(IRFtab, main = "IRF from uDE to infEA")
-IRFtab$IRF = SVMA[2,1,]; irf21 <- MyPlot(IRFtab, main = "IRF from uEA to infDE")
+IRFtab$IRF = SVMA[1,1,]; irf11 <- MyPlot(IRFtab, main = "IRF from uFR to infFR")
+IRFtab$IRF = SVMA[1,2,]; irf12 <- MyPlot(IRFtab, main = "IRF from uDE to infFR")
+IRFtab$IRF = SVMA[2,1,]; irf21 <- MyPlot(IRFtab, main = "IRF from uFR to infDE")
 IRFtab$IRF = SVMA[2,2,]; irf22 <- MyPlot(IRFtab, main = "IRF from uDE to infDE")
 grid.arrange(irf11,irf12,irf21,irf22, ncol=2)
 
@@ -103,7 +103,7 @@ i      = 2            # which variables
 SIRFi  = SVMA[i,,]    # IRF for variable i
 temp   = SIRFi^2      # contribution of shock[t] to forecast variance at [t+h]
 FVARi  = apply(temp,1,cumsum) # contribution of shocks[t:t+h] to forecast variance at [t+h]
-FEVD0  <- prop.table(FVARi,1); colnames(FEVD0) = c("uEA","uDE")
+FEVD0  <- prop.table(FVARi,1); colnames(FEVD0) = c("uFR","uDE")
 FEVD1  <- data.frame(H = 0:K, eEA = FEVD0[,1], eDE = FEVD0[,2])
 
 kable(FEVD1[c(1:5,13,25,49),],digits=3,row.names = FALSE)
@@ -140,7 +140,7 @@ SIRF  = t(SVMA[i,,])    # IRF for variable i
 
 # c. Historical decompositoion
 HistDec             <- matrix(NA,T,2)
-colnames(HistDec)   <- c("uEA","uDE")
+colnames(HistDec)   <- c("uFR","uDE")
 
 for(t in 1:T){
   junk1 <- as.matrix(u[1:t,])
@@ -169,7 +169,7 @@ ggplot() +
 # 7. A forecast #
 #################
 
-H   <- 60
+H   <- 20
 T   <- dim(z)[1]
 
 fct <- predict(VARE, n.ahead=H)
@@ -192,7 +192,7 @@ MyPlot(point_fct,main="Forecast for GDP growth from VAR",xlab="",hline=mean(z[,i
 # Annual forecasts
 require(xts)
 require(lubridate)
-datesf <- last(index(z))+months(1:60)
+datesf <- seq.Date(from = as.Date("2021-01-01"), to =as.Date("2025-10-01"),by = "quarter"  ))
 temp     <- zoo(fct$fcst$pH[,1],datesf)
 xf = c(z[,2],temp)
 
