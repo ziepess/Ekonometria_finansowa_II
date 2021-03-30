@@ -21,7 +21,7 @@ gdp_de <-get_eurostat("namq_10_gdp",
                       filters = list(geo = "DE",
                                      na_item = "B1GQ",
                                      unit = "CLV_PCH_SM",
-                                     s_adj = "NSA"))
+                                     s_adj = "SCA"))
 
 Y <- na.omit(zoo(gdp_de$values,gdp_de$time))
 
@@ -61,19 +61,19 @@ kable(LagSel(Y_ts, crit="BIC"),digits=2)
 # AIC
 kable(LagSel(Y_ts, crit="AIC"),digits=2) 
 
-arma_0 <- arima(Y_ts, order = c(3,0,3))  # AIC
-arma_1 <- arima(Y_ts, order = c(3,0,1)) # BIC 
+arma_0 <- arima(Y_ts, order = c(2,0,1))  # AIC
+arma_1 <- arima(Y_ts, order = c(2,0,1)) # BIC 
 
 
 #### Wybor modelu ####
 
-# ARMA(3,0,3) AIC
-ar.coef_0 <- arma_0[["coef"]][1:3]
-ma.coef_0 <- arma_0[["coef"]][3:6]
+# ARMA(2,1) AIC
+ar.coef_0 <- arma_0[["coef"]][1:2]
+ma.coef_0 <- arma_0[["coef"]][3]
 
-### wybrany model ARMA (3,1) BIC
-ar.coef_1 <- arma_1[["coef"]][1:3]
-ma.coef_1 <- arma_1[["coef"]][4:4]
+### wybrany model ARMA (2,1) BIC
+ar.coef_1 <- arma_1[["coef"]][1:2]
+ma.coef_1 <- arma_1[["coef"]][3]
 
 
 
@@ -93,7 +93,7 @@ MyPlot(IRFtab, main="IRF from ARMA for Germany")
 
 
 
-#### Prognoza ARMA(3,1) ####                  
+#### Prognoza ARMA(2,1) ####                  
 fcst <- forecast(arma_1, h=12)
 head(fcst)
 plot(fcst, include=120, shaded=T, shadecols=c('grey','GhostWhite'), main="GDP Germany diff", ylab="", xlab="", bty="l")
